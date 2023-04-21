@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 pub struct Felt {
     value: u64,
@@ -11,6 +11,10 @@ impl Felt {
             value: value % modulus,
             modulus,
         }
+    }
+
+    fn inverse(&self) -> Self {
+        todo!()
     }
 }
 
@@ -47,6 +51,17 @@ impl Mul for Felt {
             panic!("Cannot multiply two Felt values with different moduli");
         }
         Felt::new(self.value * other.value, self.modulus)
+    }
+}
+
+impl Div for Felt {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        if self.modulus != other.modulus {
+            panic!("Cannot divide two Felt values with different moduli");
+        }
+        self * other.inverse()
     }
 }
 
