@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 pub struct Felt {
     value: u64,
@@ -22,6 +22,20 @@ impl Add for Felt {
             panic!("Cannot add two Felt values with different moduli");
         }
         Felt::new(self.value + other.value, self.modulus)
+    }
+}
+
+impl Sub for Felt {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        if self.modulus != other.modulus {
+            panic!("Cannot subtract two Felt values with different moduli");
+        }
+        if self.value < other.value {
+            return Felt::new(self.value + self.modulus - other.value, self.modulus);
+        }
+        Felt::new(self.value - other.value, self.modulus)
     }
 }
 
@@ -73,6 +87,32 @@ mod test {
         let f1 = Felt::new(5, 7);
         let f2 = Felt::new(3, 9);
         let _ = f1 + f2;
+    }
+
+    #[test]
+    fn test_subtract_with_no_overflow() {
+        let f1 = Felt::new(3, 7);
+        let f2 = Felt::new(1, 7);
+        let f3 = f1 - f2;
+        assert_eq!(f3.value, 2);
+        assert_eq!(f3.modulus, 7);
+    }
+
+    #[test]
+    fn test_subtract_with_overflow() {
+        let f1 = Felt::new(2, 7);
+        let f2 = Felt::new(5, 7);
+        let f3 = f1 - f2;
+        assert_eq!(f3.value, 4);
+        assert_eq!(f3.modulus, 7);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot subtract two Felt values with different moduli")]
+    fn test_subtract_with_different_modulus_should_panic() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(3, 9);
+        let _ = f1 - f2;
     }
 
     #[test]
