@@ -1,6 +1,6 @@
 use std::{
     fmt::{Display, Formatter},
-    ops::Add,
+    ops::{Add, Neg},
 };
 
 use crate::felt::felt::Felt;
@@ -73,7 +73,7 @@ impl Add for ECPoint {
         }
 
         // P + (-P) = 0
-        if self.x == other.x && self.y == -other.y {
+        if self == -other {
             return ECPoint::infinity(self.a, self.b);
         }
 
@@ -82,6 +82,14 @@ impl Add for ECPoint {
         let y = s * (self.x - x) - self.y;
 
         ECPoint::new(x, y, self.a, self.b).unwrap()
+    }
+}
+
+impl Neg for ECPoint {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        ECPoint::new(self.x, -self.y, self.a, self.b).unwrap()
     }
 }
 
