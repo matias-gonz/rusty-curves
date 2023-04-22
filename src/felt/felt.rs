@@ -1,5 +1,7 @@
 use std::ops::{Add, Div, Mul, Sub};
 
+use super::felt_errors::FeltError;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Felt {
     value: u64,
@@ -15,7 +17,7 @@ impl Felt {
     }
 
     // Extended Euclidean algorithm
-    fn inverse(&self) -> Self {
+    fn inverse(&self) -> Result<Self, FeltError> {
         let mut t = 0_i64;
         let mut new_t = 1;
         let mut r = self.modulus as i64;
@@ -34,14 +36,14 @@ impl Felt {
         }
 
         if r > 1 {
-            panic!("{} is not invertible (mod {})", self.value, self.modulus);
+            return Err(FeltError::NotInvertible(self.value, self.modulus));
         }
 
         if t < 0 {
             t += self.modulus as i64;
         }
 
-        Felt::new(t as u64, self.modulus)
+        Ok(Felt::new(t as u64, self.modulus))
     }
 }
 
@@ -91,7 +93,10 @@ impl Div for Felt {
         if other.value == 0 {
             panic!("Cannot divide by zero");
         }
-        self * other.inverse()
+        match other.inverse() {
+            Ok(inverse) => self * inverse,
+            Err(e) => panic!("{}", e),
+        }
     }
 }
 
@@ -217,7 +222,7 @@ mod test {
     #[test]
     fn test_inverse_of_one_should_be_one() {
         let f = Felt::new(1, 7);
-        let f_inv = f.inverse();
+        let f_inv = f.inverse().unwrap();
         assert_eq!(f_inv.value, 1);
         assert_eq!(f_inv.modulus, 7);
     }
@@ -225,7 +230,7 @@ mod test {
     #[test]
     fn test_inverse_of_three_modulus_seven_should_be_five() {
         let f = Felt::new(3, 7);
-        let f_inv = f.inverse();
+        let f_inv = f.inverse().unwrap();
         assert_eq!(f_inv.value, 5);
         assert_eq!(f_inv.modulus, 7);
     }
@@ -233,7 +238,7 @@ mod test {
     #[test]
     fn test_multiply_with_inverse_should_equal_one() {
         let f = Felt::new(3, 7);
-        let f_inv = f.inverse();
+        let f_inv = f.inverse().unwrap();
         let f_one = f * f_inv;
         assert_eq!(f_one.value, 1);
         assert_eq!(f_one.modulus, 7);
