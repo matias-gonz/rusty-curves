@@ -88,6 +88,9 @@ impl Div for Felt {
         if self.modulus != other.modulus {
             panic!("Cannot divide two Felt values with different moduli");
         }
+        if other.value == 0 {
+            panic!("Cannot divide by zero");
+        }
         self * other.inverse()
     }
 }
@@ -234,6 +237,50 @@ mod test {
         let f_one = f * f_inv;
         assert_eq!(f_one.value, 1);
         assert_eq!(f_one.modulus, 7);
+    }
+
+    #[test]
+    fn test_divide_with_no_overflow() {
+        let f1 = Felt::new(6, 7);
+        let f2 = Felt::new(2, 7);
+        let f3 = f1 / f2;
+        assert_eq!(f3.value, 3);
+        assert_eq!(f3.modulus, 7);
+    }
+
+    #[test]
+    fn test_divide_with_overflow() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(3, 7);
+        let f3 = f1 / f2;
+        assert_eq!(f3.value, 4);
+        assert_eq!(f3.modulus, 7);
+    }
+
+    #[test]
+    fn test_divide_and_multiply_should_equal_original() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(3, 7);
+        let f3 = f1 / f2;
+        let f4 = f3 * f2;
+        assert_eq!(f4.value, 5);
+        assert_eq!(f4.modulus, 7);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide two Felt values with different moduli")]
+    fn test_divide_with_different_modulus_should_panic() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(3, 9);
+        let _ = f1 / f2;
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide by zero")]
+    fn test_divide_with_zero_should_panic() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(0, 7);
+        let _ = f1 / f2;
     }
 
     #[test]
