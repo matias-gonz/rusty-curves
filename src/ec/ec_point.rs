@@ -1,6 +1,6 @@
 use std::{
     fmt::{Display, Formatter},
-    ops::{Add, Neg},
+    ops::{Add, AddAssign, Mul, Neg},
 };
 
 use crate::felt::felt::Felt;
@@ -93,11 +93,37 @@ impl Add for ECPoint {
     }
 }
 
+impl AddAssign for ECPoint {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+
 impl Neg for ECPoint {
     type Output = Self;
 
     fn neg(self) -> Self {
         ECPoint::new(self.x, -self.y, self.a, self.b).unwrap()
+    }
+}
+
+impl Mul<u64> for ECPoint {
+    type Output = Self;
+
+    fn mul(self, other: u64) -> Self {
+        let mut result = ECPoint::infinity(self.a, self.b);
+        let mut current = self;
+        let mut i = other;
+
+        while i > 0 {
+            if i % 2 == 1 {
+                result += current;
+            }
+            i >>= 1;
+            current += current;
+        }
+
+        result
     }
 }
 
@@ -264,6 +290,84 @@ mod test {
 
         let p3 = p1 + p2;
         assert_eq!(p3, ECPoint::infinity(a, b));
+    }
+
+    #[test]
+    fn test_multiply_by_one_should_equal_original() {
+        let modulus = 37;
+        let a = Felt::new(7, modulus);
+        let b = Felt::new(13, modulus);
+        let x = Felt::new(5, modulus);
+        let y = Felt::new(5, modulus);
+
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let p2 = p * 1;
+        assert_eq!(p2, p);
+    }
+
+    #[test]
+    fn test_multiply_by_two() {
+        let modulus = 37;
+        let a = Felt::new(7, modulus);
+        let b = Felt::new(13, modulus);
+        let x = Felt::new(5, modulus);
+        let y = Felt::new(5, modulus);
+
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let p2 = p * 2;
+        assert_eq!(
+            p2,
+            ECPoint::new(Felt::new(1, modulus), Felt::new(13, modulus), a, b).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_multiply_by_three() {
+        let modulus = 37;
+        let a = Felt::new(7, modulus);
+        let b = Felt::new(13, modulus);
+        let x = Felt::new(5, modulus);
+        let y = Felt::new(5, modulus);
+
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let p2 = p * 3;
+        assert_eq!(
+            p2,
+            ECPoint::new(Felt::new(35, modulus), Felt::new(18, modulus), a, b).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_multiply_by_ten() {
+        let modulus = 37;
+        let a = Felt::new(7, modulus);
+        let b = Felt::new(13, modulus);
+        let x = Felt::new(5, modulus);
+        let y = Felt::new(5, modulus);
+
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let p2 = p * 10;
+        assert_eq!(
+            p2,
+            ECPoint::new(Felt::new(22, modulus), Felt::new(14, modulus), a, b).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_compare_multiplication_and_addition() {
+        let modulus = 37;
+        let a = Felt::new(3, modulus);
+        let b = Felt::new(7, modulus);
+        let x = Felt::new(18, modulus);
+        let y = Felt::new(26, modulus);
+        let p = ECPoint::new(x, y, a, b).unwrap();
+
+        let mut p_add = ECPoint::infinity(a, b);
+        for i in 1..1000 {
+            p_add += p;
+            let p_mul = p * i;
+            assert_eq!(p_add, p_mul);
+        }
     }
 
     #[test]
