@@ -65,6 +65,10 @@ impl Felt {
     pub fn value(&self) -> u64 {
         self.value
     }
+
+    pub fn modulus(&self) -> u64 {
+        self.modulus
+    }
 }
 
 impl Add for Felt {
