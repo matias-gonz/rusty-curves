@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use super::felt_errors::FeltError;
 
@@ -61,6 +61,10 @@ impl Felt {
 
         result
     }
+
+    pub fn value(&self) -> u64 {
+        self.value
+    }
 }
 
 impl Add for Felt {
@@ -113,6 +117,14 @@ impl Div for Felt {
             Ok(inverse) => self * inverse,
             Err(e) => panic!("{}", e),
         }
+    }
+}
+
+impl Neg for Felt {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Felt::new(self.modulus - self.value, self.modulus)
     }
 }
 
@@ -350,6 +362,14 @@ mod test {
         let f_pow = f.pow(0);
         assert_eq!(f_pow.value, 1);
         assert_eq!(f_pow.modulus, 7);
+    }
+
+    #[test]
+    fn test_negative_felt() {
+        let f = Felt::new(5, 7);
+        let f_neg = -f;
+        assert_eq!(f_neg.value, 2);
+        assert_eq!(f_neg.modulus, 7);
     }
 
     #[test]
