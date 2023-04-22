@@ -291,6 +291,13 @@ mod test {
     }
 
     #[test]
+    fn test_felt_not_equal() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(3, 7);
+        assert_ne!(f1, f2);
+    }
+
+    #[test]
     fn test_felt_display() {
         let f = Felt::new(5, 7);
         assert_eq!(format!("{}", f), "5 (mod 7)");
