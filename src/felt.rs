@@ -1,5 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Felt {
     value: u64,
     modulus: u64,
@@ -13,8 +14,34 @@ impl Felt {
         }
     }
 
+    // Extended Euclidean algorithm
     fn inverse(&self) -> Self {
-        todo!()
+        let mut t = 0_i64;
+        let mut new_t = 1;
+        let mut r = self.modulus as i64;
+        let mut new_r = self.value as i64;
+
+        while new_r != 0 {
+            let quotient = r / new_r;
+
+            let old_t = t;
+            t = new_t;
+            new_t = old_t - quotient * new_t;
+
+            let old_r = r;
+            r = new_r;
+            new_r = old_r - quotient * new_r;
+        }
+
+        if r > 1 {
+            panic!("{} is not invertible (mod {})", self.value, self.modulus);
+        }
+
+        if t < 0 {
+            t += self.modulus as i64;
+        }
+
+        Felt::new(t as u64, self.modulus)
     }
 }
 
@@ -142,6 +169,14 @@ mod test {
     }
 
     #[test]
+    fn test_subtract_self_should_equal_zero() {
+        let f1 = Felt::new(5, 7);
+        let f2 = f1 - f1;
+        assert_eq!(f2.value, 0);
+        assert_eq!(f2.modulus, 7);
+    }
+
+    #[test]
     fn test_multiply_with_no_overflow() {
         let f1 = Felt::new(3, 7);
         let f2 = Felt::new(2, 7);
@@ -174,6 +209,31 @@ mod test {
         let f1 = Felt::new(5, 7);
         let f2 = Felt::new(3, 9);
         let _ = f1 * f2;
+    }
+
+    #[test]
+    fn test_inverse_of_one_should_be_one() {
+        let f = Felt::new(1, 7);
+        let f_inv = f.inverse();
+        assert_eq!(f_inv.value, 1);
+        assert_eq!(f_inv.modulus, 7);
+    }
+
+    #[test]
+    fn test_inverse_of_three_modulus_seven_should_be_five() {
+        let f = Felt::new(3, 7);
+        let f_inv = f.inverse();
+        assert_eq!(f_inv.value, 5);
+        assert_eq!(f_inv.modulus, 7);
+    }
+
+    #[test]
+    fn test_multiply_with_inverse_should_equal_one() {
+        let f = Felt::new(3, 7);
+        let f_inv = f.inverse();
+        let f_one = f * f_inv;
+        assert_eq!(f_one.value, 1);
+        assert_eq!(f_one.modulus, 7);
     }
 
     #[test]
