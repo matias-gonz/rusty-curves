@@ -127,6 +127,14 @@ impl Mul<u64> for ECPoint {
     }
 }
 
+impl Mul<ECPoint> for u64 {
+    type Output = ECPoint;
+
+    fn mul(self, other: ECPoint) -> ECPoint {
+        other * self
+    }
+}
+
 impl Display for ECPoint {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.infinity {
@@ -365,7 +373,7 @@ mod test {
         let mut p_add = ECPoint::infinity(a, b);
         for i in 1..1000 {
             p_add += p;
-            let p_mul = p * i;
+            let p_mul = i * p;
             assert_eq!(p_add, p_mul);
         }
     }
