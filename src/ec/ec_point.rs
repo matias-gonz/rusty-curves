@@ -240,4 +240,26 @@ mod test {
         let p3 = p1 + p2;
         assert_eq!(p3, ECPoint::infinity(a, b));
     }
+
+    #[test]
+    fn test_display() {
+        let modulus = 37;
+        let a = Felt::new(3, modulus);
+        let b = Felt::new(7, modulus);
+        let x = Felt::new(18, modulus);
+        let y = Felt::new(26, modulus);
+
+        let p1 = ECPoint::new(x, y, a, b).unwrap();
+        assert_eq!(format!("{}", p1), "(18, 26)");
+    }
+
+    #[test]
+    fn test_display_infinity() {
+        let modulus = 37;
+        let a = Felt::new(3, modulus);
+        let b = Felt::new(7, modulus);
+
+        let p1 = ECPoint::infinity(a, b);
+        assert_eq!(format!("{}", p1), "Infinity");
+    }
 }
