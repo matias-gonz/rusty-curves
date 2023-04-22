@@ -77,7 +77,16 @@ impl Add for ECPoint {
             return ECPoint::infinity(self.a, self.b);
         }
 
-        let s = (other.y - self.y) / (other.x - self.x);
+        let s = match self == other {
+            true => {
+                let felt_3 = Felt::new(3, self.a.modulus());
+                let felt_2 = Felt::new(2, self.a.modulus());
+
+                (felt_3 * self.x.pow(2) + self.a) / (felt_2 * self.y)
+            }
+            false => (other.y - self.y) / (other.x - self.x),
+        };
+
         let x = s.pow(2) - self.x - other.x;
         let y = s * (self.x - x) - self.y;
 
@@ -175,6 +184,23 @@ mod test {
 
         let p3 = p1 + p2;
         assert_eq!(p3, ECPoint::infinity(a, b));
+    }
+
+    #[test]
+    fn test_add_point_with_itself() {
+        let modulus = 101;
+        let a = Felt::new(5, modulus);
+        let b = Felt::new(13, modulus);
+        let x = Felt::new(24, modulus);
+        let y = Felt::new(25, modulus);
+
+        let p1 = ECPoint::new(x, y, a, b).unwrap();
+
+        let p3 = p1 + p1;
+        assert_eq!(
+            p3,
+            ECPoint::new(Felt::new(67, modulus), Felt::new(38, modulus), a, b).unwrap()
+        );
     }
 
     #[test]
