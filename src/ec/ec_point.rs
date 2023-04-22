@@ -77,14 +77,13 @@ impl Add for ECPoint {
             return ECPoint::infinity(self.a, self.b);
         }
 
-        let s = match self == other {
-            true => {
-                let felt_3 = Felt::new(3, self.a.modulus());
-                let felt_2 = Felt::new(2, self.a.modulus());
+        let s = if self == other {
+            let felt_3 = Felt::new(3, self.a.modulus());
+            let felt_2 = Felt::new(2, self.a.modulus());
 
-                (felt_3 * self.x.pow(2) + self.a) / (felt_2 * self.y)
-            }
-            false => (other.y - self.y) / (other.x - self.x),
+            (felt_3 * self.x.pow(2) + self.a) / (felt_2 * self.y)
+        } else {
+            (other.y - self.y) / (other.x - self.x)
         };
 
         let x = s.pow(2) - self.x - other.x;
