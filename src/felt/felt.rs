@@ -17,7 +17,7 @@ impl Felt {
     }
 
     // Extended Euclidean algorithm
-    fn inverse(&self) -> Result<Self, FeltError> {
+    pub fn inverse(&self) -> Result<Self, FeltError> {
         let mut t = 0_i64;
         let mut new_t = 1;
         let mut r = self.modulus as i64;
@@ -44,6 +44,22 @@ impl Felt {
         }
 
         Ok(Felt::new(t as u64, self.modulus))
+    }
+
+    pub fn pow(&self, exponent: u64) -> Self {
+        let mut result = Felt::new(1, self.modulus);
+        let mut base = *self;
+        let mut exp = exponent;
+
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = result * base;
+            }
+            exp >>= 1;
+            base = base * base;
+        }
+
+        result
     }
 }
 
@@ -289,6 +305,54 @@ mod test {
     }
 
     #[test]
+    fn test_felt_pow_with_exponent_one() {
+        let f = Felt::new(5, 7);
+        let f_pow = f.pow(1);
+        assert_eq!(f_pow.value, 5);
+        assert_eq!(f_pow.modulus, 7);
+    }
+
+    #[test]
+    fn test_felt_pow_with_exponent_two() {
+        let f = Felt::new(5, 7);
+        let f_pow = f.pow(2);
+        assert_eq!(f_pow.value, 4);
+        assert_eq!(f_pow.modulus, 7);
+    }
+
+    #[test]
+    fn test_felt_pow_with_exponent_power_of_two() {
+        let f = Felt::new(5, 97);
+        let f_pow = f.pow(32);
+        assert_eq!(f_pow.value, 35);
+        assert_eq!(f_pow.modulus, 97);
+    }
+
+    #[test]
+    fn test_felt_pow_with_exponent_not_a_power_of_two() {
+        let f = Felt::new(12, 101);
+        let f_pow = f.pow(52);
+        assert_eq!(f_pow.value, 58);
+        assert_eq!(f_pow.modulus, 101);
+    }
+
+    #[test]
+    fn test_felt_pow_with_exponent_one_should_equal_original() {
+        let f = Felt::new(5, 7);
+        let f_pow = f.pow(1);
+        assert_eq!(f_pow.value, 5);
+        assert_eq!(f_pow.modulus, 7);
+    }
+
+    #[test]
+    fn test_felt_pow_with_exponent_zero_should_equal_one() {
+        let f = Felt::new(5, 7);
+        let f_pow = f.pow(0);
+        assert_eq!(f_pow.value, 1);
+        assert_eq!(f_pow.modulus, 7);
+    }
+
+    #[test]
     fn test_felt_equal() {
         let f1 = Felt::new(5, 7);
         let f2 = Felt::new(5, 7);
@@ -299,6 +363,13 @@ mod test {
     fn test_felt_not_equal() {
         let f1 = Felt::new(5, 7);
         let f2 = Felt::new(3, 7);
+        assert_ne!(f1, f2);
+    }
+
+    #[test]
+    fn test_felt_not_equal_with_different_modulus() {
+        let f1 = Felt::new(5, 7);
+        let f2 = Felt::new(5, 9);
         assert_ne!(f1, f2);
     }
 
