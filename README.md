@@ -7,20 +7,27 @@ Diffie-Hellman key exchange implementation using Eliptic Curves.
 
 ### Field Element
 
-The field element implements the basic operations: `Add`, `Sub`, `Mul`, `Div`, `Pow` and `Inverse`:
+A Felt(field element) constructor takes two parameters: `value` and `modulus`.
+```rust
+fn new(value: u64, modulus: u64)
+```
+
+The field element implements the basic operations: `Add`, `Sub`, `Mul`, `Div`, `Neg`, `Pow` and `Inverse`:
 
 ```rust
 let f1 = Felt::new(5, 7);
 let f2 = Felt::new(3, 7);
+
 let f_add = f1 + f2;
 let f_sub = f1 - f2;
 let f_mul = f1 * f2;
 let f_div = f1 / f2;
+let f_neg = -f1;
 let f_inv = f1.inverse();
 let f_pow = f.pow(5);
 ```
 
-The inverse operation is done using the [Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm).
+The multiplicative inverse operation is done using the [Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm). 
 
 The power calculation is optimized using bitwise operations. This calculates the power in constant time with a maximum of 64 iterations:
 
@@ -34,3 +41,4 @@ while exp > 0 {
 }
 ```
 
+Felts can only operate with other Felts which have the same modulus, otherwise the operation will panic.
