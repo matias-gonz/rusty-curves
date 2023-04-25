@@ -57,6 +57,7 @@ impl ECPoint {
     }
 
     // Naive implementation of getting all points on the curve
+    #[allow(dead_code)]
     fn get_all_points(a: Felt, b: Felt) -> HashSet<ECPoint> {
         let mut points = HashSet::new();
         points.insert(ECPoint::infinity(a, b));
