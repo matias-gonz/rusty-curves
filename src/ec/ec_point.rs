@@ -388,8 +388,6 @@ mod test {
         let p = ECPoint::new(x, y, a, b).unwrap();
         let k = 655;
         let kp = ECPoint::new(Felt::new(388, modulus), Felt::new(60, modulus), a, b).unwrap();
-        println!("{kp}");
-        assert!(false);
         assert_eq!(k * p, kp);
     }
 
