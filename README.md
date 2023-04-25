@@ -42,3 +42,26 @@ while exp > 0 {
 ```
 
 Felts can only operate with other Felts which have the same modulus, otherwise the operation will panic.
+
+### Elliptic curve
+
+Elliptic curve points support addition and multiplication. This is an example with the curve: $y^2 =x^3-3x-3$ with $p=1021$
+
+```rust
+let modulus = 1021;
+let a = -Felt::new(3, modulus);
+let b = -Felt::new(3, modulus);
+let x = Felt::new(379, modulus);
+let y = Felt::new(1011, modulus);
+let p = ECPoint::new(x, y, a, b).unwrap();
+
+let k = 655;
+let kp = k * p;
+
+println!("{}", kp);
+
+// Outputs: (388, 60)
+```
+
+
+

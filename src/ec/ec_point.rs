@@ -379,6 +379,21 @@ mod test {
     }
 
     #[test]
+    fn test_multiply() {
+        let modulus = 1021;
+        let a = -Felt::new(3, modulus);
+        let b = -Felt::new(3, modulus);
+        let x = Felt::new(379, modulus);
+        let y = Felt::new(1011, modulus);
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let k = 655;
+        let kp = ECPoint::new(Felt::new(388, modulus), Felt::new(60, modulus), a, b).unwrap();
+        println!("{kp}");
+        assert!(false);
+        assert_eq!(k * p, kp);
+    }
+
+    #[test]
     fn test_display() {
         let modulus = 37;
         let a = Felt::new(3, modulus);
