@@ -63,5 +63,15 @@ println!("{}", kp);
 // Outputs: (388, 60)
 ```
 
+We can also calculate the number of points in that curve:
+```rust
+let modulus = 1021;
+let a = -Felt::new(3, modulus);
+let b = -Felt::new(3, modulus);
+let n = ECPoint::get_all_points(a,b).len();
 
+println!("{}", n);
+
+//Outputs 1039
+```
 
