@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     fmt::{Display, Formatter},
     ops::{Add, AddAssign, Mul, Neg},
 };
@@ -7,7 +8,7 @@ use crate::felt::felt::Felt;
 
 use super::ec_errors::ECError;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ECPoint {
     x: Felt,
     y: Felt,
@@ -53,6 +54,26 @@ impl ECPoint {
             b,
             infinity: true,
         }
+    }
+
+    // Naive implementation of getting all points on the curve
+    fn get_all_points(a: Felt, b: Felt) -> HashSet<ECPoint> {
+        let mut points = HashSet::new();
+        points.insert(ECPoint::infinity(a, b));
+
+        for x in 0..a.modulus() {
+            for y in 0..a.modulus() {
+                let felt_x = Felt::new(x, a.modulus());
+                let felt_y = Felt::new(y, a.modulus());
+
+                let _ = match ECPoint::new(felt_x, felt_y, a, b) {
+                    Ok(point) => points.insert(point),
+                    Err(_) => true,
+                };
+            }
+        }
+
+        points
     }
 }
 
@@ -389,6 +410,26 @@ mod test {
         let k = 655;
         let kp = ECPoint::new(Felt::new(388, modulus), Felt::new(60, modulus), a, b).unwrap();
         assert_eq!(k * p, kp);
+    }
+
+    #[test]
+    fn test_get_all_points_simple() {
+        let modulus = 7;
+        let a = Felt::new(2, modulus);
+        let b = Felt::new(3, modulus);
+
+        let points = ECPoint::get_all_points(a, b);
+        assert_eq!(points.len(), 6);
+    }
+
+    #[test]
+    fn test_get_all_points_big_curve() {
+        let modulus = 1021;
+        let a = -Felt::new(3, modulus);
+        let b = -Felt::new(3, modulus);
+        println!("a = {}", a);
+        let points = ECPoint::get_all_points(a, b);
+        assert_eq!(points.len(), 1039);
     }
 
     #[test]

@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use super::felt_errors::FeltError;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Felt {
     value: u64,
     modulus: u64,
