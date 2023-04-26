@@ -46,7 +46,7 @@ impl ECPoint {
         }
     }
 
-    fn infinity(a: Felt, b: Felt) -> ECPoint {
+    pub fn infinity(a: Felt, b: Felt) -> ECPoint {
         ECPoint {
             x: Felt::new(0, a.modulus()),
             y: Felt::new(0, a.modulus()),

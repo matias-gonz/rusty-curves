@@ -49,6 +49,10 @@ Bob's Shared Secret: (13, 28)
 
 We verify the shared secret is the same for both parties.
 
+### Comparing two different generators
+
+We could use any point on the curve as a generator but some are not
+
 ## Primitives
 
 ### Field Element
