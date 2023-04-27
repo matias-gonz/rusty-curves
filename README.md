@@ -75,7 +75,9 @@ println!("{}", n);
 //Outputs 1039
 ```
 
-## Example
+## Diffie-Hellman Key Exchange Example
+
+Let's implement a Diffie-Hellman key exchange using elliptic curves.
 
 Elliptic Curve: $y^2 = x^3 + 6$ (mod 43)
 ```rust
@@ -120,3 +122,42 @@ Bob's Shared Secret: (13, 28)
 ```
 
 We verify the shared secret is the same for both parties.
+
+## Comparing generator points
+
+In the previous example we chose an arbitrary g = (13, 15) but we could have chose any other and there are advantages on choosing some over others.
+
+Let's compare $g_1$ = (13, 15) and $g_2$ = (9, 2):
+
+```rust
+let mut gi = g1;
+let mut order_1 = 1;
+while gi != ECPoint::infinity(a, b) {
+    order_1 += 1;
+    gi += g1;
+}
+println!("Order of Generator Point 1: {}", order_1);
+
+println!("Generator Point 2: {}", g2);
+
+let mut gi = g2;
+let mut order_2 = 1;
+while gi != ECPoint::infinity(a, b) {
+    order_2 += 1;
+    gi += g2;
+}
+
+println!("Order of Generator Point 2: {}", order_2);
+
+assert!(order_2 > order_1);
+```
+
+Output:
+```
+Generator Point 1: (13, 15)
+Order of Generator Point 1: 13
+Generator Point 2: (9, 2)
+Order of Generator Point 2: 39
+```
+
+The order of $g_2$ is greater and $g_1$'s, this means $g_2$'s subgroup has more elements and makes guessing a private key harder. This algorithm's security depends on how hard the Discrete Logarithm Problem is to solve for the chosen g. The lower the order of the element the easier it is to solve DLP.
