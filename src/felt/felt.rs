@@ -78,7 +78,8 @@ impl Add for Felt {
         if self.modulus != other.modulus {
             panic!("Cannot add two Felt values with different moduli");
         }
-        Felt::new(self.value + other.value, self.modulus)
+        let value = self.value as u128 + other.value as u128;
+        Felt::new((value % self.modulus as u128) as u64, self.modulus)
     }
 }
 
@@ -90,7 +91,8 @@ impl Sub for Felt {
             panic!("Cannot subtract two Felt values with different moduli");
         }
         if self.value < other.value {
-            return Felt::new(self.value + self.modulus - other.value, self.modulus);
+            let value = self.value as u128 + self.modulus as u128 - other.value as u128;
+            return Felt::new((value % self.modulus as u128) as u64, self.modulus);
         }
         Felt::new(self.value - other.value, self.modulus)
     }
@@ -103,7 +105,8 @@ impl Mul for Felt {
         if self.modulus != other.modulus {
             panic!("Cannot multiply two Felt values with different moduli");
         }
-        Felt::new(self.value * other.value, self.modulus)
+        let value = self.value as u128 * other.value as u128;
+        Felt::new((value % self.modulus as u128) as u64, self.modulus)
     }
 }
 
