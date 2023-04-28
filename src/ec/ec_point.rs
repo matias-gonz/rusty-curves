@@ -67,6 +67,20 @@ impl ECPoint {
         order
     }
 
+    pub fn solve_dlp_brute_force(&self, target: ECPoint) -> Option<u64> {
+        let mut gi = *self;
+        let mut x = 1;
+        let infinity = ECPoint::infinity(self.a, self.b);
+        while gi != infinity {
+            if gi == target {
+                return Some(x);
+            }
+            x += 1;
+            gi += *self;
+        }
+        None
+    }
+
     // Naive implementation of getting all points on the curve
     #[allow(dead_code)]
     fn get_all_points(a: Felt, b: Felt) -> HashSet<ECPoint> {
@@ -454,6 +468,24 @@ mod test {
         let p = ECPoint::new(x, y, a, b).unwrap();
         let order = p.order();
         assert_eq!(order, 1039);
+    }
+
+    #[test]
+    fn test_solve_dlp_brute_force() {
+        let modulus = 1021;
+        let a = Felt::new(905, modulus);
+        let b = Felt::new(100, modulus);
+        let x = Felt::new(1006, modulus);
+        let y = Felt::new(416, modulus);
+        let p = ECPoint::new(x, y, a, b).unwrap();
+
+        let x = Felt::new(612, modulus);
+        let y = Felt::new(827, modulus);
+        let q = ECPoint::new(x, y, a, b).unwrap();
+
+        let k = 687;
+
+        assert_eq!(p.solve_dlp_brute_force(q).unwrap(), k);
     }
 
     #[test]
