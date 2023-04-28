@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fmt::{Display, Formatter},
     ops::{Add, AddAssign, Mul, Neg},
 };
@@ -67,6 +67,7 @@ impl ECPoint {
         order
     }
 
+    // x*self = target
     pub fn solve_dlp_brute_force(&self, target: ECPoint) -> Option<u64> {
         let mut gi = *self;
         let mut x = 1;
@@ -78,6 +79,32 @@ impl ECPoint {
             x += 1;
             gi += *self;
         }
+        None
+    }
+
+    // x*self = target
+    pub fn solve_dlp_baby_step_giant_step(&self, target: ECPoint) -> Option<u64> {
+        let m = (self.order() as f64).sqrt().ceil() as u64;
+
+        let mut baby_steps = HashMap::new();
+        let mut gi = *self;
+        for i in 1..m {
+            baby_steps.insert(gi, i);
+            gi += *self;
+        }
+
+        let mp = m * *self;
+        let mut jmp = ECPoint::infinity(self.a, self.b); // j*m*p not jump :P
+        for j in 0..m {
+            let q = target + (-jmp);
+
+            if let Some(i) = baby_steps.get(&q) {
+                return Some(m * j + i);
+            }
+
+            jmp += mp;
+        }
+
         None
     }
 
@@ -150,6 +177,9 @@ impl Neg for ECPoint {
     type Output = Self;
 
     fn neg(self) -> Self {
+        if self.infinity {
+            return self;
+        }
         ECPoint::new(self.x, -self.y, self.a, self.b).unwrap()
     }
 }
@@ -484,8 +514,30 @@ mod test {
         let q = ECPoint::new(x, y, a, b).unwrap();
 
         let k = 687;
+        let solved_k = p.solve_dlp_brute_force(q).unwrap();
 
-        assert_eq!(p.solve_dlp_brute_force(q).unwrap(), k);
+        assert_eq!(solved_k, k);
+        assert_eq!(solved_k * p, q);
+    }
+
+    #[test]
+    fn test_solve_dlp_baby_step_giant_step() {
+        let modulus = 1021;
+        let a = Felt::new(905, modulus);
+        let b = Felt::new(100, modulus);
+        let x = Felt::new(1006, modulus);
+        let y = Felt::new(416, modulus);
+        let p = ECPoint::new(x, y, a, b).unwrap();
+
+        let x = Felt::new(612, modulus);
+        let y = Felt::new(827, modulus);
+        let q = ECPoint::new(x, y, a, b).unwrap();
+
+        let k = 687;
+        let solved_k = p.solve_dlp_baby_step_giant_step(q).unwrap();
+
+        assert_eq!(solved_k, k);
+        assert_eq!(solved_k * p, q);
     }
 
     #[test]
