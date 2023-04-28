@@ -69,15 +69,15 @@ impl ECPoint {
 
     // x*self = target
     pub fn solve_dlp_brute_force(&self, target: ECPoint) -> Option<u64> {
-        let mut gi = *self;
+        let mut xp = *self;
         let mut x = 1;
         let infinity = ECPoint::infinity(self.a, self.b);
-        while gi != infinity {
-            if gi == target {
+        while xp != infinity {
+            if xp == target {
                 return Some(x);
             }
             x += 1;
-            gi += *self;
+            xp += *self;
         }
         None
     }
@@ -85,12 +85,11 @@ impl ECPoint {
     // x*self = target
     pub fn solve_dlp_baby_step_giant_step(&self, target: ECPoint) -> Option<u64> {
         let m = (self.order() as f64).sqrt().ceil() as u64;
-
         let mut baby_steps = HashMap::new();
-        let mut gi = *self;
+        let mut pi = *self;
         for i in 1..m {
-            baby_steps.insert(gi, i);
-            gi += *self;
+            baby_steps.insert(pi, i);
+            pi += *self;
         }
 
         let mp = m * *self;
