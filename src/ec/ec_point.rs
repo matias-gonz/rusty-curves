@@ -56,6 +56,17 @@ impl ECPoint {
         }
     }
 
+    pub fn order(&self) -> u64 {
+        let mut gi = *self;
+        let mut order = 1;
+        let infinity = ECPoint::infinity(self.a, self.b);
+        while gi != infinity {
+            order += 1;
+            gi += *self;
+        }
+        order
+    }
+
     // Naive implementation of getting all points on the curve
     #[allow(dead_code)]
     fn get_all_points(a: Felt, b: Felt) -> HashSet<ECPoint> {
@@ -431,6 +442,18 @@ mod test {
         println!("a = {}", a);
         let points = ECPoint::get_all_points(a, b);
         assert_eq!(points.len(), 1039);
+    }
+
+    #[test]
+    fn test_get_order() {
+        let modulus = 1021;
+        let a = -Felt::new(3, modulus);
+        let b = -Felt::new(3, modulus);
+        let x = Felt::new(379, modulus);
+        let y = Felt::new(1011, modulus);
+        let p = ECPoint::new(x, y, a, b).unwrap();
+        let order = p.order();
+        assert_eq!(order, 1039);
     }
 
     #[test]
