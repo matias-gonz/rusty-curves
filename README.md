@@ -161,10 +161,12 @@ let alice_pk = g.solve_dlp_brute_force(alice_sk);
 This algorithm can solve DLP in fewer steps:
 
 $$ xP = Q $$
+
 $$ (mj + i)P = Q $$
+
 $$ iP = Q - mjP$$
 
-First we choose $m = ceil(\sqrt{n})$
+First we choose $m = ceil(\sqrt{n})$ where $n$ is the order of $P$
 
 Then we calculate $iP$ for $i \in \{1, 2, ... m\}$
 
