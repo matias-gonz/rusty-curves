@@ -131,7 +131,7 @@ We know that Alice will generate her shared key using her private key and multip
 let alice_sk = g * alice_pk;
 ```
 
-Hacking Alice means finding `alice_pk` and that is solving DLP. DLP is a `hard` problem and there are many algorithms. Next I will present two of them:
+Hacking Alice means finding `alice_pk` and that is solving DLP. DLP is a _hard_ problem and there are many algorithms. Next I will present two of them:
 
 ### Brute force
 
