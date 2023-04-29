@@ -123,6 +123,83 @@ Bob's Shared Secret: (13, 28)
 
 We verify the shared secret is the same for both parties.
 
+## Let's hack Bob and Alice
+
+We know that Alice will generate her shared key using her private key and multiplying it with the public generator point:
+
+```rust
+let alice_sk = g * alice_pk;
+```
+
+Hacking Alice means finding `alice_pk` and that is solving DLP. DLP is a `hard` problem and there are many algorithms. Next I will present two of them:
+
+### Brute force
+
+Brute force is a naive approach that can solve this problem for small subgroups. As the order of the subgroup increases, chances are there is not enough computational power to solve a given problem.
+
+```rust
+// x*self = target
+pub fn solve_dlp_brute_force(&self, target: ECPoint) -> Option<u64> {
+    let mut xp = *self;
+    let mut x = 1;
+    let infinity = ECPoint::infinity(self.a, self.b);
+    while xp != infinity {
+        if xp == target {
+            return Some(x);
+        }
+        x += 1;
+        xp += *self;
+    }
+    None
+}
+
+let alice_pk = g.solve_dlp_brute_force(alice_sk);
+```
+
+### Baby step giant step
+
+This algorithm can solve DLP in fewer steps:
+
+$$ xP = Q $$
+$$ (mj + i)P = Q $$
+$$ iP = Q - mjP$$
+
+First we choose $m = ceil(\sqrt{n})$
+
+Then we calculate $iP$ for $i \in \{1, 2, ... m\}$
+
+After that we iterate j and calculate $Q - mjP$ until we find a collision with the first list. When we find a collision it means we found $i$ and $j$ such that $iP = Q - mjP$ so we can calculate and return:
+
+$$x = mj + i$$
+
+```rust
+pub fn solve_dlp_baby_step_giant_step(&self, target: ECPoint) -> Option<u64> {
+    let m = (self.order() as f64).sqrt().ceil() as u64;
+    let mut baby_steps = HashMap::new();
+    let mut pi = *self;
+    for i in 1..m {
+        baby_steps.insert(pi, i);
+        pi += *self;
+    }
+
+    let mp = m * *self;
+    let mut jmp = ECPoint::infinity(self.a, self.b); // j*m*p not jump :P
+    for j in 0..m {
+        let q = target + (-jmp);
+
+        if let Some(i) = baby_steps.get(&q) {
+            return Some(m * j + i);
+        }
+
+        jmp += mp;
+    }
+
+    None
+}
+
+let alice_pk = g.solve_dlp_baby_step_giant_step(alice_sk);
+```
+
 ## Comparing generator points
 
 In the previous example we chose an arbitrary g = (13, 15) but we could have chose any other and there are advantages on choosing some over others.
