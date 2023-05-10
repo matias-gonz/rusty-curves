@@ -95,14 +95,14 @@ println!("Generator Point: {}", g);
 let alice_pk = 7;
 let bob_pk = 11;
 
-let alice_sk = g * alice_pk;
-let bob_sk = g * bob_pk;
+let alice_public = g * alice_sk;
+let bob_public = g * bob_sk;
 
-println!("Alice's Secret Key: {}", alice_sk);
-println!("Bob's Secret Key: {}", bob_sk);
+println!("Alice's Public Key: {}", alice_public);
+println!("Bob's Public Key: {}", bob_public);
 
-let alice_shared_secret = bob_sk * alice_pk;
-let bob_shared_secret = alice_sk * bob_pk;
+let alice_shared_secret = bob_public * alice_sk;
+let bob_shared_secret = alice_public * bob_sk;
 
 println!("Alice's Shared Secret: {}", alice_shared_secret);
 println!("Bob's Shared Secret: {}", bob_shared_secret);
@@ -115,8 +115,8 @@ Output:
 Diffie-Hellman Key Exchange
 Elliptic Curve: y^2 = x^3 + 6 (mod 43)
 Generator Point: (13, 15)
-Alice's Secret Key: (27, 9)
-Bob's Secret Key: (33, 9)
+Alice's Public Key: (27, 9)
+Bob's Public Key: (33, 9)
 Alice's Shared Secret: (13, 28)
 Bob's Shared Secret: (13, 28)
 ```
@@ -131,7 +131,7 @@ We know that Alice will generate her shared key using her private key and multip
 let alice_sk = g * alice_pk;
 ```
 
-Hacking Alice means finding `alice_pk` and that is solving DLP. DLP is a _hard_ problem and there are many algorithms. Next I will present two of them:
+Hacking Alice means finding `alice_sk` and that is solving DLP. DLP is a _hard_ problem and there are many algorithms. Next I will present two of them:
 
 ### Brute force
 
@@ -199,7 +199,7 @@ pub fn solve_dlp_baby_step_giant_step(&self, target: ECPoint) -> Option<u64> {
     None
 }
 
-let alice_pk = g.solve_dlp_baby_step_giant_step(alice_sk);
+let alice_sk = g.solve_dlp_baby_step_giant_step(alice_public);
 ```
 
 ## Comparing generator points
